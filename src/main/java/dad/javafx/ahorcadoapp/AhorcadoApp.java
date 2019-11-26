@@ -29,7 +29,8 @@ private ListProperty<Jugador> listaJugadores = new SimpleListProperty<Jugador>(F
 		primaryStage.setTitle("Ahorcado");
 		primaryStage.setScene(scene);
 		primaryStage.show();
-		root.cargarNuevoJuego();
+//		root.cargarNuevoJuego();
+		
 	}
 	@Override
 	public void init() throws Exception {

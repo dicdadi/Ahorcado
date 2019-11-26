@@ -54,7 +54,7 @@ public RootController() throws IOException {
 	FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/ViewRoot.fxml"));
 	loader.setController(this);
 	loader.load();
-	Parent root=loader.getRoot();
+	
 	
 	
 }
@@ -82,18 +82,17 @@ public RootController() throws IOException {
 	//partida.getPartidaModel().palabraOcultaProperty().bind();
 	//partida.getPartidaModel().vidasProperty().bind(model.vidasProperty());
 	
-	//model.setVidas(9);
-	//model.puntuacionesProperty().add(new Jugador("rosmen",800,"10/10/2019"));
+	
 	}
-	public void cargarNuevoJuego() {
-		partida.nuevaPartida(generaPalabraOculta().toUpperCase());
-//		partida.nuevaPartida("LA LUZ");
-	}
-	public String generaPalabraOculta() {
-		 
-		 return model.palabrasProperty().get((int)(Math.random()*model.palabrasProperty().getSize()));
-	      
-	}
+//	public void cargarNuevoJuego() {
+//		partida.nuevaPartida(generaPalabraOculta().toUpperCase());
+//
+//	}
+//	public String generaPalabraOculta() {
+//		 
+//		 return model.palabrasProperty().get((int)(Math.random()*model.palabrasProperty().getSize()));
+//	      
+//	}
 	public BorderPane getView() {
 		return rootView;
 	}

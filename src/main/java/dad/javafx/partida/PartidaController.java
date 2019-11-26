@@ -9,6 +9,7 @@ import java.util.ResourceBundle;
 
 import dad.javafx.puntuaciones.Jugador;
 import dad.javafx.root.RootController;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -25,12 +26,13 @@ import javafx.scene.layout.BorderPane;
 import javafx.util.converter.NumberStringConverter;
 
 public class PartidaController implements Initializable {
-	private final static int VIDAS=9;
+	private final static int VIDAS=8;
 	private PartidaModel partidaModel= new PartidaModel();
 	RootController rootController;
 	private String palabraOculta="";
 	private String palabraFormateada="";
 	private char auxLetra;
+	private int carga=0;
 	public PartidaModel getPartidaModel() {
 		return partidaModel;
 	}
@@ -65,31 +67,32 @@ public class PartidaController implements Initializable {
     void onLetraBotonAction(ActionEvent event) {
     	
     	try {
-			TextInputDialog dialog = new TextInputDialog();
-			dialog.setTitle("Letra ahorcado");
-			dialog.setContentText("Introduce letra:");
-			Optional<String> result = dialog.showAndWait();
-			if (result.isPresent() && result.get()!=null) {
-				char letra=result.get().toUpperCase().charAt(0);
-				if(Character.isAlphabetic(result.get().charAt(0)) && result.get().length()==1) {
-					if(partidaModel.getLetrasIntroducidas().contains(Character.toString(letra))) {
-						Alert alert = new Alert(AlertType.INFORMATION);
-						alert.setTitle("Letra introducida");
-						alert.setHeaderText("Ya has introducido esta letra.");
-						alert.setContentText("No se verá contabilizado como fallo.");
-						alert.show();
-					}else {
-					procesaLetra(letra);
-					}
-				}else {
-					Alert alert = new Alert(AlertType.ERROR);
-					alert.setTitle("ERROR:LETRA INCORRECTA");
-					alert.setHeaderText("Introduce sólo una letra alfabética válida.");
-					alert.setContentText("No se verá contabilizado como fallo.");
-					alert.show();
+
+    			if(partidaModel.getPalabraIntroducida().length()==1) {
+    			
+    			if (partidaModel.getPalabraIntroducida() !=null) {
+    				char letra=partidaModel.getPalabraIntroducida().toUpperCase().charAt(0);
+    				if(Character.isAlphabetic(letra)) {
+    					if(partidaModel.getLetrasIntroducidas().contains(Character.toString(letra))) {
+    						Alert alert = new Alert(AlertType.INFORMATION);
+    						alert.setTitle("Letra introducida");
+    						alert.setHeaderText("Ya has introducido esta letra.");
+    						alert.setContentText("No se verá contabilizado como fallo.");
+    						alert.show();
+    					}else {
+    					procesaLetra(letra);
+    					}
+    				}else {
+    					Alert alert = new Alert(AlertType.ERROR);
+    					alert.setTitle("ERROR:LETRA INCORRECTA");
+    					alert.setHeaderText("Introduce sólo una letra alfabética válida.");
+    					alert.setContentText("No se verá contabilizado como fallo.");
+    					alert.show();
+    				}
 				}
 				
 			}
+    			partidaModel.setPalabraIntroducida(null);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
@@ -103,23 +106,27 @@ public class PartidaController implements Initializable {
     	
  
     	try {
-			if(partidaModel.getPalabraIntroducida().toUpperCase().equals(palabraOculta)) {
+   
+    		 if(partidaModel.getPalabraIntroducida().toUpperCase().equals(palabraOculta)) {
 				Alert alert = new Alert(AlertType.INFORMATION);
 				alert.setTitle("Palabra introducida");
 				alert.setHeaderText("CORRECTO");
 				alert.setContentText("Se te añadiran 10 puntos extras");
 				alert.show();
 				partidaModel.setPuntos(partidaModel.getPuntos()+10);
-				nuevaPalabra(rootController.generaPalabraOculta().toUpperCase());
+				nuevaPalabra(generaPalabraOculta().toUpperCase());
 				partidaModel.setPalabraIntroducida(null);
 	
-			}else if(partidaModel.getVidas()>1) {
+			}else if(partidaModel.getVidas()>=1) {
 			
 				partidaModel.setVidas(partidaModel.getVidas()-1);
+				
 				partidaModel.setPalabraIntroducida(null);
 			}else {
+
 				guardarPuntuacion();
 			}
+    		
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			//e.printStackTrace();
@@ -147,24 +154,42 @@ public class PartidaController implements Initializable {
 		letrasPuestasText.textProperty().bind(partidaModel.letrasIntroducidasProperty());
 		palabraOcultaText.textProperty().bind(partidaModel.palabraOcultaProperty());
 		partidaModel.vidasProperty().addListener((o,ov,nv)->cambiaImagen(nv));
+		partidaModel.listaPalabrasPartidaProperty().addListener((o,ov,nv)->cambiosEnLista(nv));
 		
 		//nuevaPartida();
 		
 		
 	}
 	
-	private void cambiaImagen(Number nv) {
-	if(nv.intValue()>0) {
-	int calculo=10-partidaModel.getVidas();
-	Image nuevaImagen= new Image("/images/"+calculo+".png");
-	partidaModel.setImagen(nuevaImagen);
+	private void cambiosEnLista(ObservableList<String> nv) {
+		if(carga==0) {//Por alguna razon cuando se carga la primera vez, carga una lista vacia,pero inmediatamente se sustituye por la siguente
+			carga++;
+		}else {
+			cargarNuevoJuego();
+		}
+		
 	}
+
+	private void cambiaImagen(Number nv) {
+		int calculo;
+	if(nv.intValue()>=1) {
+		calculo=10-(partidaModel.getVidas()+1);
+		Image nuevaImagen= new Image("/images/"+calculo+".png");
+		partidaModel.setImagen(nuevaImagen);
+	}else {
+		calculo=9;
+		Image nuevaImagen= new Image("/images/9.png");
+		partidaModel.setImagen(nuevaImagen);
+		guardarPuntuacion();
+		
+	}
+	
 	}
 
 	public void nuevaPartida(String palabraOculta){
 		if(this.palabraOculta.equals(palabraOculta)) {
 			//Si la palabra anterior es igual a la nueva que carga, solicita una diferente.
-			nuevaPartida(rootController.generaPalabraOculta());
+			nuevaPartida(generaPalabraOculta());
 		}else {
 			this.palabraOculta=palabraOculta;
 			formateaPalabra(palabraOculta);
@@ -216,7 +241,7 @@ public class PartidaController implements Initializable {
 		
 		
 		if(palabraOculta.equals(palabra.toUpperCase())) {
-			nuevaPalabra(rootController.generaPalabraOculta().toUpperCase());
+			nuevaPalabra(generaPalabraOculta().toUpperCase());
 		}else {
 		palabraOculta=palabra;
 		formateaPalabra(palabra);
@@ -228,7 +253,7 @@ public class PartidaController implements Initializable {
 		
 		if(palabraOculta.equals(palabraFormateada.replaceAll(" ", "x").replaceAll("xx", " ").replaceAll("x", ""))) {
 			partidaModel.setPuntos(partidaModel.getPuntos()+1);
-		nuevaPalabra(rootController.generaPalabraOculta().toUpperCase());
+		nuevaPalabra(generaPalabraOculta().toUpperCase());
 		}
 	else if(correcto) {
 			partidaModel.setLetrasIntroducidas(partidaModel.getLetrasIntroducidas()+" "+auxLetra);
@@ -240,7 +265,7 @@ public class PartidaController implements Initializable {
     	partidaModel.setVidas(partidaModel.getVidas()-1);
     	}else {
     		partidaModel.setVidas(partidaModel.getVidas()-1);
-    		guardarPuntuacion();
+    	
 
     	}
 	}
@@ -265,7 +290,7 @@ public class PartidaController implements Initializable {
 			
 			
 		}
-		rootController.cargarNuevoJuego();
+		cargarNuevoJuego();
 	}
 
 	private void iniciaPartida() {
@@ -276,6 +301,15 @@ public class PartidaController implements Initializable {
 		Image imageInicio=new Image("/images/1.png");
 		partidaModel.setImagen(imageInicio);
 		
+	}
+	public void cargarNuevoJuego() {
+		nuevaPartida(generaPalabraOculta().toUpperCase());
+
+	}
+	public String generaPalabraOculta() {
+		 
+		 return partidaModel.listaPalabrasPartidaProperty().get((int)(Math.random()*partidaModel.listaPalabrasPartidaProperty().getSize()));
+	      
 	}
 	public BorderPane getView() {
 		return partidaView;
