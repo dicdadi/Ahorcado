@@ -42,7 +42,7 @@ public class PalabrasController implements Initializable {
 			dialog.setContentText("Nombre");
 			Optional<String> result = dialog.showAndWait();
 			
-			if(result.isPresent() && result.get().length()>3 && !Pattern.compile( "[0-9]" ).matcher( result.get() ).find() && result.get()!=null) {
+			if(result.isPresent() && result.get().length()>=3 && !Pattern.compile( "[0-9]" ).matcher( result.get() ).find() && result.get()!=null) {
 
 				modelPalabras.listaPalabrasProperty().add(result.get());
 			}else {
